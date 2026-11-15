@@ -1,0 +1,2 @@
+- will use a Gymnasium environment object to represent the board 
+- the board will hold cell objects 

@@ -1,0 +1,20 @@
+
+# this will be used to cascade cells.
+# 2 uses - to identify the largest cascade for first move
+# to reveal cells in a cascade in normal play. return won't be used here
+# better off having a grid method to return all neighbors from a certain cell. that way won't have to deal with OOB
+
+cascade(cell:object, reveal:bool) -> int:
+    if cell.adjacentBombCount > 0:
+        return 0
+    
+    countFromHere = 1 # we are the first one
+
+    for neighbor in grid.getNeighbors(cell):
+        countFromHere += cascade(neighbor, reveal)
+
+    if reveal:
+        cell.reveal()
+
+    return countFromHere
+
