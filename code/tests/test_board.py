@@ -12,6 +12,7 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(self.theBoard.shape, (10,10))
         self.assertEqual(self.board_10_10.bombs.size, 20)
         self.assertEqual(self.board_10_10.safeCells.size, 80)
+        self.assertEqual(self.board_10_10.remainingSafeCells, 80)
 
         for cell in self.board_10_10.safeCells:
             self.assertFalse(cell.isBomb)
@@ -34,7 +35,7 @@ class TestBoard(unittest.TestCase):
         self.assertTrue(diag in neighbors)
 
     def test_getNeighbors_interior(self):
-        
+
         cell: Cell = self.theBoard[5][5]
         neighbors: list[Cell] = self.board_10_10.getNeighborCells(cell)
 
@@ -61,31 +62,28 @@ class TestBoard(unittest.TestCase):
     def test_print(self):
         self.board_10_10.showRevealedBoard()
 
-    """
-    test a cascade, seed=1234, 10x10, 20 mines
-    """
 
     """
     test various cascades on the board
     """
-    def test_cascade_count(self):
+    def test_cascade_1(self):
+        
         start:Cell = self.theBoard[0][0]
         cascade: list[Cell] = self.board_10_10.cascade(start, reveal=False)
         self.assertEqual(len(cascade), 7)
+
+    def test_cascade_2(self):
 
         start:Cell = self.theBoard[0][6]
         cascade: list[Cell] = self.board_10_10.cascade(start, reveal=False)
         self.assertEqual(len(cascade), 12)
 
+    def test_cascade_3(self):
+
         start:Cell = self.theBoard[6][0]
         cascade: list[Cell] = self.board_10_10.cascade(start, reveal=False)
         self.assertEqual(len(cascade), 1)
         self.assertEqual(cascade[0], start)
-
-        start:Cell = self.theBoard[6][0]
-        cascade: list[Cell] = self.board_10_10.cascade(start, reveal=True)
-        self.assertTrue(start.revealed, True)
-
 
     def test_longestCascade(self):
 
@@ -97,6 +95,17 @@ class TestBoard(unittest.TestCase):
 
         self.assertEqual(set(cells), set(cascade))
         self.assertEqual(len(cascade), 12)
+
+
+    """
+    add tests for revealing and finished games
+    """
+    def test_reveal1_cascade(self):
+
+        self.board_10_10.revealCell(0,0)
+        self.assertFalse(self.board_10_10.isFinished())
+        self.assertEqual(self.board_10_10.remainingSafeCells, 80-7)
+
 
     
 if __name__ == "__main__":
