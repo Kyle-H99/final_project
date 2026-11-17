@@ -1,21 +1,40 @@
 
 class Cell:
-    def __init__(self, isBomb:bool, row:int, col:int) -> None:
+    def __init__(self, isBomb:bool) -> None:
 
         self.isBomb:bool = isBomb
         self.revealed:bool = False
+        self.visited = False
 
         self.adjacentBombs:int # to be filled when board is made
-        self.row:int = row
-        self.col:int = col
+        self.row:int
+        self.col:int
 
 
     def setNumber(self, num:int) -> None:
         self.adjacentBombs = num
 
-
-    def __str__(self) -> str:
+    def reveal(self) -> None:
         if self.revealed:
-            return f" {self.adjacentBombs} "
-        else:
-            return f" -1 "
+            raise Exception("reveal called on revealed cell", self)
+
+        self.revealed = True
+
+    def hide(self) -> None:
+        if not self.revealed:
+            raise Exception("reveal called on revealed cell", self)
+
+        self.revealed = False
+
+    def setCoords(self, row:int, col:int) -> None:
+        self.row, self.col = row, col
+
+    def showTrueVal(self) -> str:
+        if self.isBomb:
+            return "B"
+        return f"{self.adjacentBombs}"
+
+    def showCurrentVal(self) -> str:
+        if not self.revealed:
+            return "."
+        return self.showTrueVal()
