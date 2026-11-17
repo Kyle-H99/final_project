@@ -20,7 +20,7 @@ class MinesweeperBoard:
         self.remainingSafeCells:int = len(self.safeCells)
 
 
-############ creation methods
+# creation methods
     def _makeBombs(self, num:int) -> np.ndarray:
         return np.array([Cell(isBomb=True) for _ in range(num)])
 
@@ -49,8 +49,8 @@ class MinesweeperBoard:
     
     def _calcAdjacentBombs(self, cell:Cell) -> None:
         """
-        calculates a cell's number based on its neighbors
-        sets the cell's property
+        - calculates a cell's number based on its neighbors
+        - updates the cell object
         """
 
         neighbors:list[Cell] = self.getNeighborCells(cell)
@@ -63,13 +63,12 @@ class MinesweeperBoard:
 
         cell.adjacentBombs = count
 
-    """
-    """
     def _assignNumbersToCells(self) -> None:
+        """
+        calculates each cell's adjacent bombs
+        """
         for i in self.theBoard.flatten():
             self._calcAdjacentBombs(i)
-############
-
 
 
 # getters
@@ -117,13 +116,30 @@ class MinesweeperBoard:
 
     def showRevealedBoard(self) -> None:
         """
-        pretty print the board, shows everything
+        - pretty print the board, shows everything
+        - does not modify anything
         """
         print()
         for row in range(self.rows):
             for col in range(self.cols):
                 print(self.theBoard[row][col].showTrueVal(), end= " ")
             print()
+
+    def findLongestCascade(self) -> list[Cell]:
+        """
+        - finds a longest cascade, doesn't break ties
+        - used for first turn so as to reduce initial guessing
+        - if no cascade exists, i.e. no 0 cells, list is empty
+        """
+        longestCascade: list[Cell] = []
+
+        for cell in self.safeCells.flatten():
+            if cell.adjacentBombs == 0:
+                cells: list[Cell] = self.cascade(cell, reveal=False)
+                if len(cells) > len(longestCascade):
+                    longestCascade = cells
+
+        return longestCascade
 
 
 # setters
@@ -137,19 +153,22 @@ class MinesweeperBoard:
         """
 
         theCell:Cell = self.theBoard[row][col]
+        if theCell.isBomb:
+            theCell.reveal()
+            return
 
-        if theCell.adjacentBombs == 0:
+        if theCell.adjacentBombs > 0:
+            self.remainingSafeCells -= 1
+            theCell.reveal()
+        else:
             cascade: list[Cell] = self.cascade(theCell, True)
             self.remainingSafeCells -= len(cascade)
-        else:
-            theCell.reveal()
-            self.remainingSafeCells -= 1
 
     def cascade(self, cell:Cell, reveal:bool) -> list[Cell]:
         """
-        called on a cell when its number == 0
-        if reveal is True, will reveal the cells
-        returns the list of cells in the cascade
+        - called on a cell when its number == 0
+        - if reveal is True, will reveal the cells
+        - returns the list of cells in the cascade
         """
         
         cells: list[Cell] = self._cascadeHelper(cell, reveal)
@@ -184,21 +203,4 @@ class MinesweeperBoard:
         thisCascade.append(cell)
 
         return thisCascade
-
-    def findLongestCascade(self) -> list[Cell]:
-        """
-        - finds a longest cascade, doesn't break ties
-        - used for first turn so as to reduce initial guessing
-        - if no cascade exists, i.e. no 0 cells, list is empty
-        """
-        longestCascade: list[Cell] = []
-
-        for cell in self.safeCells.flatten():
-            if cell.adjacentBombs == 0:
-                cells: list[Cell] = self.cascade(cell, reveal=False)
-                if len(cells) > len(longestCascade):
-                    longestCascade = cells
-
-        return longestCascade
-
 

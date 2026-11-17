@@ -14,6 +14,10 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(self.board_10_10.safeCells.size, 80)
         self.assertEqual(self.board_10_10.remainingSafeCells, 80)
 
+        # test for dupes
+        self.assertEqual(len(set(self.board_10_10.safeCells)), 80)
+        self.assertEqual(len(set(self.board_10_10.bombs)), 20)
+
         for cell in self.board_10_10.safeCells:
             self.assertFalse(cell.isBomb)
 
@@ -72,11 +76,24 @@ class TestBoard(unittest.TestCase):
         cascade: list[Cell] = self.board_10_10.cascade(start, reveal=False)
         self.assertEqual(len(cascade), 7)
 
+        compare: list[Cell] = []
+        compare.extend([self.theBoard[i][j] for i in range(2) for j in range(3)])
+        compare.append(self.theBoard[2][0])
+
+        self.assertEqual(set(compare), set(cascade))
+
     def test_cascade_2(self):
 
         start:Cell = self.theBoard[0][6]
         cascade: list[Cell] = self.board_10_10.cascade(start, reveal=False)
         self.assertEqual(len(cascade), 12)
+
+        cells: list[Cell] = []
+
+        cells.extend([self.theBoard[row][col] for row in range(4) for col in range(6,8)])
+        cells.extend([self.theBoard[row][col] for row in range(4,6) for col in range(8,10)])
+
+        self.assertEqual(set(cells), set(cascade))
 
     def test_cascade_3(self):
 
@@ -100,11 +117,27 @@ class TestBoard(unittest.TestCase):
     """
     add tests for revealing and finished games
     """
-    def test_reveal1_cascade(self):
+    def test_reveal_cascade(self):
 
         self.board_10_10.revealCell(0,0)
         self.assertFalse(self.board_10_10.isFinished())
         self.assertEqual(self.board_10_10.remainingSafeCells, 80-7)
+
+    def test_reveal_bomb(self):
+
+        self.board_10_10.revealCell(1, 4)
+        self.assertTrue(self.board_10_10.isFinished())
+
+
+    def test_reveal_win(self):
+
+        for cell in self.board_10_10.safeCells:
+            if not cell.revealed:
+                self.board_10_10.revealCell(cell.row, cell.col)
+
+        self.assertTrue(self.board_10_10.isFinished())
+
+        
 
 
     
