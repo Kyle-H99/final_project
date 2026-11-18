@@ -40,8 +40,8 @@ class MinesweeperBoard:
         rng.shuffle(flatGrid)
 
         # cheeky method for assigning coords
-        for i in range(len(flatGrid)):
-            flatGrid[i].setCoords(i//rows, i%cols)
+        for i, cell in enumerate(flatGrid):
+            cell.setCoords(*divmod(i, cols))
 
         return flatGrid.reshape(rows, cols)
     
