@@ -15,7 +15,7 @@ observation space
 class Env(gym.Env):
     def __init__(self, rows:int, cols:int, numMines: int) -> None:
 
-        self.Board: MinesweeperBoard = MinesweeperBoard(rows, cols, numMines)
+        self.Board: MinesweeperBoard = MinesweeperBoard(rows, cols, numMines, seed=None)
 
         # spaces
         self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=(CHANNELS, rows, cols))

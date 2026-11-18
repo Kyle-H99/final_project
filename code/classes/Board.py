@@ -114,15 +114,20 @@ class MinesweeperBoard:
 
         return neighbors
 
-    def showRevealedBoard(self) -> None:
+    def showBoard(self, trueVals:bool) -> None:
         """
-        - pretty print the board, shows everything
+        - pretty print the board
+        - if trueVals, shows true vals regardless if revealed or not
+        - otherwise shows current player view
         - does not modify anything
         """
         print()
         for row in range(self.rows):
             for col in range(self.cols):
-                print(self.theBoard[row][col].showTrueVal(), end= " ")
+                if trueVals:
+                    print(self.theBoard[row][col].showTrueVal(), end= " ")
+                else:
+                    print(self.theBoard[row][col].showCurrentVal(), end = " ")
             print()
 
     def findLongestCascade(self) -> list[Cell]:

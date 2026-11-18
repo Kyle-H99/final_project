@@ -34,9 +34,8 @@ class TestBoard(unittest.TestCase):
         down:Cell = self.theBoard[1][0]
         diag:Cell = self.theBoard[1][1]
 
-        self.assertTrue(right in neighbors)
-        self.assertTrue(down in neighbors)
-        self.assertTrue(diag in neighbors)
+        self.assertEqual(set(neighbors), set([right, down, diag]))
+
 
     def test_getNeighbors_interior(self):
 
@@ -64,7 +63,7 @@ class TestBoard(unittest.TestCase):
     visually inspect that numbers are calculated correctly
     """
     def test_print(self):
-        self.board_10_10.showRevealedBoard()
+        self.board_10_10.showBoard(trueVals=True)
 
 
     """
@@ -127,6 +126,7 @@ class TestBoard(unittest.TestCase):
 
         self.board_10_10.revealCell(1, 4)
         self.assertTrue(self.board_10_10.isFinished())
+        self.assertTrue(self.theBoard[1][4].revealed)
 
 
     def test_reveal_win(self):
@@ -136,8 +136,6 @@ class TestBoard(unittest.TestCase):
                 self.board_10_10.revealCell(cell.row, cell.col)
 
         self.assertTrue(self.board_10_10.isFinished())
-
-        
 
 
     
