@@ -1,4 +1,4 @@
-import unittest 
+import unittest
 from classes.Board import *
 from classes.Cell import *
 
@@ -7,12 +7,18 @@ class TestBoard(unittest.TestCase):
         self.board_10_10 = MinesweeperBoard(rows=10, cols=10, mines=20, seed=1234)
         self.theBoard = self.board_10_10.theBoard
 
-
     def test_init(self):
         self.assertEqual(self.theBoard.shape, (10,10))
         self.assertEqual(self.board_10_10.bombs.size, 20)
         self.assertEqual(self.board_10_10.safeCells.size, 80)
         self.assertEqual(self.board_10_10.remainingSafeCells, 80)
+
+        # test coords
+        for i in range(10):
+            for j in range(10):
+                cell:Cell = self.theBoard[i][j]
+                self.assertEqual(cell.row, i)
+                self.assertEqual(cell.col, j)
 
         # test for dupes
         self.assertEqual(len(set(self.board_10_10.safeCells)), 80)
@@ -36,7 +42,6 @@ class TestBoard(unittest.TestCase):
 
         self.assertEqual(set(neighbors), set([right, down, diag]))
 
-
     def test_getNeighbors_interior(self):
 
         cell: Cell = self.theBoard[5][5]
@@ -58,6 +63,7 @@ class TestBoard(unittest.TestCase):
 
         # no duplicates: 8 distinct objects
         self.assertEqual(len({id(n) for n in neighbors}), 8)
+
 
     """
     visually inspect that numbers are calculated correctly
@@ -127,6 +133,7 @@ class TestBoard(unittest.TestCase):
         self.board_10_10.revealCell(1, 4)
         self.assertTrue(self.board_10_10.isFinished())
         self.assertTrue(self.theBoard[1][4].revealed)
+        self.assertEqual(self.board_10_10.remainingSafeCells, 80)
 
 
     def test_reveal_win(self):

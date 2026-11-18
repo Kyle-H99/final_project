@@ -13,7 +13,7 @@ class MinesweeperBoard:
         # the board objects, all arrays hold Cells
         self.bombs: np.ndarray = self._makeBombs(num=mines)
         self.safeCells: np.ndarray = self._makeSafeCells(num=rows * cols - mines)
-        self.theBoard: np.ndarray = self._makeGrid(bombs=self.bombs, safeCells=self.safeCells)
+        self.theBoard: np.ndarray = self._makeGrid(bombs=self.bombs, safeCells=self.safeCells, rows=rows, cols=cols)
         self._assignNumbersToCells()
 
         # properties for gameplay
@@ -27,7 +27,7 @@ class MinesweeperBoard:
     def _makeSafeCells(self, num:int) -> np.ndarray:
         return np.array([Cell(isBomb=False) for _ in range(num)])
 
-    def _makeGrid(self, bombs: np.ndarray, safeCells:np.ndarray) -> np.ndarray:
+    def _makeGrid(self, bombs: np.ndarray, safeCells:np.ndarray, rows:int, cols:int) -> np.ndarray:
         """
         - combine all bombs and non-bombs
         - reshape into 2d array
@@ -39,13 +39,11 @@ class MinesweeperBoard:
         rng = np.random.default_rng(seed=self.seed)
         rng.shuffle(flatGrid)
 
-        # reshape
-        reshapedGrid: np.ndarray = flatGrid.reshape(self.rows, self.cols)
-        for row in range(self.rows):
-            for col in range(self.cols):
-                reshapedGrid[row][col].setCoords(row, col)
+        # cheeky method for assigning coords
+        for i in range(len(flatGrid)):
+            flatGrid[i].setCoords(i//rows, i%cols)
 
-        return reshapedGrid
+        return flatGrid.reshape(rows, cols)
     
     def _calcAdjacentBombs(self, cell:Cell) -> None:
         """
@@ -55,13 +53,8 @@ class MinesweeperBoard:
 
         neighbors:list[Cell] = self.getNeighborCells(cell)
 
-        count:int = 0
+        cell.adjacentBombs = sum(neighbor.isBomb for neighbor in neighbors)
 
-        for neighbor in neighbors:
-            if neighbor.isBomb:
-                count += 1
-
-        cell.adjacentBombs = count
 
     def _assignNumbersToCells(self) -> None:
         """
@@ -78,17 +71,10 @@ class MinesweeperBoard:
         """
         returns bool for board being finished
         """
-
-        # no bombs may be revealed
-        for cell in self.bombs:
-            if cell.revealed:
-                return True
-
-        # all safe cells must be revealed
-        if self.remainingSafeCells == 0:
-            return True
-
-        return False
+        return (
+            any(cell.revealed for cell in self.bombs)  # a bomb was revealed (loss)
+            or self.remainingSafeCells == 0            # all safe cells revealed (win)
+        )
         
     def getNeighborCells(self, cell:Cell) -> list[Cell]:
         """
