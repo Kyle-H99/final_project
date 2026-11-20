@@ -64,12 +64,9 @@ class TestBoard(unittest.TestCase):
         # no duplicates: 8 distinct objects
         self.assertEqual(len({id(n) for n in neighbors}), 8)
 
-
-    """
-    visually inspect that numbers are calculated correctly
-    """
-    def test_print(self):
-        self.board_10_10.showBoard(trueVals=True)
+    def test_revealRevealedThrows(self):
+        self.board_10_10.revealCell(0,0)
+        self.assertRaises(Exception, self.board_10_10.revealCell, (0,0))
 
 
     """
@@ -135,6 +132,35 @@ class TestBoard(unittest.TestCase):
         self.assertTrue(self.theBoard[1][4].revealed)
         self.assertEqual(self.board_10_10.remainingSafeCells, 80)
 
+    def test_revealOne(self):
+        """
+        revealing one cell (non cascade) should not reveal others
+        """
+
+        self.board_10_10.revealCell(4,2)
+        compare: Cell = self.theBoard[4][2]
+
+        for cell in self.theBoard.flatten():
+            if cell != compare:
+                self.assertFalse(cell.revealed)
+
+    def test_revealNonCascades(self):
+        """
+        takes above test and applies to all safe cells, non cascades
+        """
+
+        for safeCell in self.board_10_10.safeCells:
+
+            if safeCell.adjacentBombs > 0 and not safeCell.revealed:
+                safeCell.reveal()
+
+                for cell in self.theBoard.flatten():
+                    if cell != safeCell:
+                        self.assertFalse(cell.revealed)
+
+                safeCell.hide()
+
+
 
     def test_reveal_win(self):
 
@@ -144,6 +170,69 @@ class TestBoard(unittest.TestCase):
 
         self.assertTrue(self.board_10_10.isFinished())
 
+
+    """
+    visually inspect that numbers are calculated correctly
+    """
+    def test_showTrueVals(self):
+        self.board_10_10.prettyPrintBoard(True)
+
+    def test_showRevealed(self):
+
+        self.board_10_10.revealCell(0,0)
+        self.board_10_10.prettyPrintBoard(False)
+
+
+    def test_showCurrentVals(self):
+        """
+        should be all -1s
+        """
+        self.board_10_10.prettyPrintBoard(False)
+
+    def test_encode1(self):
+        """
+        see the top left block of 0's
+        """
+
+        self.board_10_10.revealCell(0,0)
+        vals: list[list[int]] = self.board_10_10.getCurrentBoard(False)
+
+        encoding: np.ndarray = self.board_10_10.getEncoding()
+        zeros = encoding[0]
+
+        compare = np.where(np.array(vals) == 0, 1, 0)
+
+        self.assertTrue(np.array_equal(zeros, compare))
+
+    def test_encodeFull(self):
+        """
+        - reveal all safe cells
+        - create encoding
+        - go through each channel and check they match
+        """
+
+        for cell in self.board_10_10.safeCells:
+            if not cell.revealed:
+                cell.reveal()
+
+        vals: list[list[int]] = self.board_10_10.getCurrentBoard(False)
+        encoding: np.ndarray = self.board_10_10.getEncoding()
+
+        # 0-8
+        for val in range(9):
+            compare = np.where(np.array(vals) == val, 1, 0)
+            self.assertTrue(np.array_equal(encoding[val], compare))
+
+        # hidden
+        compare = np.where(np.array(vals) == -1, 1, 0)
+        code = encoding[9]
+        self.assertTrue(np.array_equal(code, compare))
+
+    def test_encodingBombThrows(self):
+
+        self.board_10_10.revealCell(3,2)
+
+        self.assertRaises(ValueError, self.board_10_10.getEncoding)
 
     
 if __name__ == "__main__":

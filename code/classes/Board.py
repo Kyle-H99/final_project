@@ -55,7 +55,6 @@ class MinesweeperBoard:
 
         cell.adjacentBombs = sum(neighbor.isBomb for neighbor in neighbors)
 
-
     def _assignNumbersToCells(self) -> None:
         """
         calculates each cell's adjacent bombs
@@ -100,21 +99,38 @@ class MinesweeperBoard:
 
         return neighbors
 
-    def showBoard(self, trueVals:bool) -> None:
+    def getCurrentBoard(self, trueVals:bool) -> list[list[int]]:
         """
-        - pretty print the board
-        - if trueVals, shows true vals regardless if revealed or not
-        - otherwise shows current player view
-        - does not modify anything
+        - returns the 2d representation of the board
+        - called by encode()
+        - bombs should never be encoded, so error will raise error if that happens
         """
+        try:
+            values: list[list[int]] = [[int(cell.getCurrentVal()) for cell in row] for row in self.theBoard]
+        except ValueError as e:
+            raise ValueError(f"getCurrentBoard() called with bomb revealed. Game should be over", e)
+
+        return values
+
+
+    def getTrueBoard(self) -> list[list[str]]:
+        """
+        - Returns board with true values
+        - used for testing; make sure board is being generated properly
+        """
+        return [[cell.getTrueVal() for cell in row] for row in self.theBoard] 
+    
+
+    def prettyPrintBoard(self, trueVals:bool) -> None:
+
         print()
         for row in range(self.rows):
             for col in range(self.cols):
-                if trueVals:
-                    print(self.theBoard[row][col].showTrueVal(), end= " ")
-                else:
-                    print(self.theBoard[row][col].showCurrentVal(), end = " ")
+                cell:Cell = self.theBoard[row][col]
+                val = cell.getTrueVal() if trueVals else cell.getCurrentVal()
+                print(f"{val:>2}", end=" ")
             print()
+
 
     def findLongestCascade(self) -> list[Cell]:
         """
@@ -131,6 +147,26 @@ class MinesweeperBoard:
                     longestCascade = cells
 
         return longestCascade
+
+    def getEncoding(self) -> np.ndarray:
+        """
+        - encodes the grid to a 10 x Rows x Cols array
+        - input into the CNN
+        - first dimension represents the channel for a 2D one hot encoding for cells of that value. next two dimensions are the encoding
+        - channels 0-8 represent channels for cells of that number
+        - channel 9 is unknown cells
+        - see scrap notebook for how this works. Used claude to help
+        - Note: this will be called after an action is taken and the game is deemed not finished, so we should never encode bombs.
+        """
+
+        board: np.ndarray = np.array(self.getCurrentBoard(trueVals=False))
+        board = np.where(board == -1, 9, board) # recode -1 to 9
+
+        # see scrap notebook
+        eye: np.ndarray = np.eye(10, dtype=np.float32)[board]
+        eye = np.moveaxis(eye, -1, 0)
+
+        return eye
 
 
 # setters

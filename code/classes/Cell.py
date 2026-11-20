@@ -29,12 +29,12 @@ class Cell:
     def setCoords(self, row:int, col:int) -> None:
         self.row, self.col = row, col
 
-    def showTrueVal(self) -> str:
+    def getTrueVal(self) -> str:
         if self.isBomb:
             return "B"
         return f"{self.adjacentBombs}"
 
-    def showCurrentVal(self) -> str:
+    def getCurrentVal(self) -> str:
         if not self.revealed:
-            return "."
-        return self.showTrueVal()
+            return "-1"
+        return self.getTrueVal()
